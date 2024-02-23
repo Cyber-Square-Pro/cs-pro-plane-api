@@ -17,10 +17,10 @@ def get_default_onboarding():
         "workspace_join": False,
     }
 
-class User(models.Model):
-    id = models.UUIDField(
-        default=uuid.uuid4, unique=True, editable=False, db_index=True, primary_key=True
-    )
+class User(AbstractBaseUser):
+    # id = models.UUIDField(
+    #     default=uuid.uuid4, unique=True, editable=False, db_index=True, primary_key=True
+    # )
     username = models.CharField(max_length=128, unique=True)
 
     # user fields
@@ -30,14 +30,14 @@ class User(models.Model):
     last_name = models.CharField(max_length=255, blank=True)
     avatar = models.CharField(max_length=255, blank=True)
     cover_image = models.URLField(blank=True, null=True, max_length=800)
-
+    password = models.CharField(max_length=128, default = '')
     # tracking metrics
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Last Modified At")
     last_location = models.CharField(max_length=255, blank=True)
     created_location = models.CharField(max_length=255, blank=True)
-
+    email_code = models.CharField(max_length = 20, default = '')
     # the is' es
     is_superuser = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
