@@ -1,6 +1,9 @@
 from django.urls import path
-from api.views import SetPasswordEndpoint
+from api.views import SetPasswordEndpoint, EmailEndPoint
 
 urlpatterns = [
-    path('user/password/set/', SetPasswordEndpoint.as_view(), name = 'set_password' )
+    path('user/password/set/', SetPasswordEndpoint.as_view(), name = 'set_password' ),
+    path('user/email/',EmailEndPoint.as_view(), name = 'user_email' ),
+   
+
 ]

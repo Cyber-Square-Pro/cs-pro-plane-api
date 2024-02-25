@@ -1,2 +1,3 @@
-from .authentication import SignUpEndpoint
-from .user import SetPasswordEndpoint
+from .authentication import SignUpEndpoint, SignInEndPoint
+from .user import SetPasswordEndpoint, EmailEndPoint
+from .base import TokenResponseMixin

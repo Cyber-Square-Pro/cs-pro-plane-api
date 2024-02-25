@@ -6,7 +6,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, UserManager, PermissionsMixin
-
+import random
+import string
 
 
 def get_default_onboarding():
@@ -17,6 +18,7 @@ def get_default_onboarding():
         "workspace_join": False,
     }
 
+
 class User(AbstractBaseUser):
     # id = models.UUIDField(
     #     default=uuid.uuid4, unique=True, editable=False, db_index=True, primary_key=True
@@ -25,19 +27,23 @@ class User(AbstractBaseUser):
 
     # user fields
     mobile_number = models.CharField(max_length=255, blank=True, null=True)
-    email = models.CharField(max_length=255, null=True, blank=True, unique=True)
+    email = models.CharField(max_length=255, null=True,
+                             blank=True, unique=True)
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
     avatar = models.CharField(max_length=255, blank=True)
     cover_image = models.URLField(blank=True, null=True, max_length=800)
-    password = models.CharField(max_length=128, default = '')
+    password = models.CharField(max_length=128, default='')
     # tracking metrics
-    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Last Modified At")
+    date_joined = models.DateTimeField(
+        auto_now_add=True, verbose_name="Created At")
+    created_at = models.DateTimeField(
+        auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(
+        auto_now=True, verbose_name="Last Modified At")
     last_location = models.CharField(max_length=255, blank=True)
     created_location = models.CharField(max_length=255, blank=True)
-    email_code = models.CharField(max_length = 20, default = '')
+    email_code = models.CharField(max_length=20, default='')
     # the is' es
     is_superuser = models.BooleanField(default=False)
     is_managed = models.BooleanField(default=False)
@@ -55,7 +61,8 @@ class User(AbstractBaseUser):
     has_billing_address = models.BooleanField(default=False)
 
     USER_TIMEZONE_CHOICES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
-    user_timezone = models.CharField(max_length=255, default="UTC", choices=USER_TIMEZONE_CHOICES)
+    user_timezone = models.CharField(
+        max_length=255, default="UTC", choices=USER_TIMEZONE_CHOICES)
 
     last_active = models.DateTimeField(default=timezone.now, null=True)
     last_login_time = models.DateTimeField(null=True)
@@ -111,3 +118,22 @@ class User(AbstractBaseUser):
             self.is_staff = True
 
         super(User, self).save(*args, **kwargs)
+
+
+class VerificationCode(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+    )
+    code = models.CharField(max_length = 10, unique=True)
+    request_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        expiration_time = self.created_at + timezone.timedelta(seconds=30)
+        return timezone.now() > expiration_time
+    
+    def can_request_code(self):
+        # Check if the user has reached the limit of 5 requests and if the last request was more than 10 minutes ago
+        return self.request_count < 5 and (self.last_request_timestamp is None or timezone.now() > self.last_request_timestamp + timezone.timedelta(minutes=10))
+    def __str__(self):  
+        return f'{self.user_email} - {self.code}'

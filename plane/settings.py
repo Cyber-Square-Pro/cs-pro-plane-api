@@ -49,17 +49,23 @@ INSTALLED_APPS = [
 
 ]
 
-REST_FRAMEWORK = {
+# REST_FRAMEWORK = {
 
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
 
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
-
-}
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'api.',  # Replace with the actual path to your permission class
+       
+#     ),
+     
+# }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10080),
+    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10080),
+    # "REFRESH_TOKEN_LIFETIME": timedelta(days=43200),
+     "ACCESS_TOKEN_LIFETIME": timedelta(seconds= 40),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=43200),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -183,3 +189,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'cybersquarepro756@gmail.com'
+EMAIL_HOST_PASSWORD = 'xowsqlpwkgrvwdpy'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
