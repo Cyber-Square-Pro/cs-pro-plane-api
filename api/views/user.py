@@ -49,3 +49,19 @@ class EmailEndPoint(APIView,TokenResponseMixin):
             'message': 'Password Created',
             'status_code': 201
         })
+
+class UpdateUserProfileEndpoint(APIView):
+    permission_classes = [CustomJWTPermission]
+    def patch(self, request):
+        try:
+            print(request.user_id,'888888888888')
+            user = User.objects.get(pk=request.user_id)
+        
+            user.onboarding_step['profile_complete'] = True
+            user.first_name = request.data['first_name']
+            user.last_name = request.data['last_name']
+
+            user.save()
+        except: 
+            print('error')
+        return Response({"message": "Updated successfully"}, status=status.HTTP_200_OK)

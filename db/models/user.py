@@ -12,10 +12,10 @@ import string
 
 def get_default_onboarding():
     return {
-        "profile_complete": False,
-        "workspace_create": False,
-        "workspace_invite": False,
-        "workspace_join": False,
+        'email_verified': False,
+        'profile_complete': False,
+        'workspace_create': False,
+        'workspace_join': False,
     }
 
 
