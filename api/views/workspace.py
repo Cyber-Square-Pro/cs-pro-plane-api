@@ -29,19 +29,19 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
                     {'status_code': 409, 
                      'message': 'Workspace URL is already taken!'
                      }) 
-            print('first')
+             
             if not workspace_name or not slug:
                 return Response(
                     {'message': "Both name and slug are required"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            print('second')
+            
             if len(workspace_name) > 80 or len(slug) > 48:
                 return Response(
                     {'message': "The maximum length for name is 80 and for slug is 48"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            print('third')
+            
             if serializer.is_valid():
                 serializer.save(owner_id = request.user_id)
                 _ = WorkspaceMember.objects.create(
@@ -51,9 +51,11 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
                     
                 )
                 print('here')
+                token_response = self.handle_token_response(request)
                 return Response({
                     'data':serializer.data,
                     'message': 'Workspace Created Succesfully'
+                    **token_response
                     })
             else:
                 print(serializer.errors)

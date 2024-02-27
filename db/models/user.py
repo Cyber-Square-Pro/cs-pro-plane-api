@@ -124,12 +124,11 @@ class VerificationCode(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE,
     )
-    code = models.CharField(max_length = 10, unique=True)
-    request_count = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length = 20, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
     def is_expired(self):
-        expiration_time = self.created_at + timezone.timedelta(seconds=30)
+        expiration_time = self.created_at + timezone.timedelta(seconds = 50)
+         
         return timezone.now() > expiration_time
     
     def can_request_code(self):

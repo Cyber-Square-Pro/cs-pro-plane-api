@@ -1,4 +1,4 @@
-from .authentication import SignUpEndpoint, SignInEndPoint
-from .user import SetPasswordEndpoint, EmailEndPoint, UpdateUserProfileEndpoint
-from .base import TokenResponseMixin
+from .authentication import *
+from .user import *
+from .base import *
 from .workspace import *
