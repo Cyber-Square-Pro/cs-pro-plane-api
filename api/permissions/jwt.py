@@ -12,15 +12,17 @@ from rest_framework_simplejwt.exceptions import TokenError
 
 class CustomJWTPermission(BasePermission):
     def has_permission(self, request, view):
-        
+        print('permission')
         access_token = request.headers.get('Authorization', '').split('Bearer ')[-1]
         # user_id =  UntypedToken(access_token)['user_id']
         # print('90900', user_id)
         # request.user_id = user_id
-        # print(access_token['user_id'],'000000000000000')
+        print(access_token)
         if not access_token:
+            print('no token')
             raise PermissionDenied(self.un_authorized('No access token'))
         else:
+            print(' token')
             try:
                 user_id =  UntypedToken(access_token)['user_id']
                 request.user_id = user_id
@@ -44,12 +46,14 @@ class CustomJWTPermission(BasePermission):
                 print('====================================')
                 # new_tokens_data = {'access_token': new_access_token, 'refresh_token': new_refresh_token}
                 # print(new_tokens_data)
-                return True
+                return super().has_permission(request, view)
+
                 # return Response({'new_access_token': new_access_token, 'new_refresh_token': new_refresh_token})
             
             except InvalidToken:
                 print('heeee')
                 raise PermissionDenied(self.un_authorized('Invalid token'))
+         
         return super().has_permission(request, view)
         # try:
         #     data = UntypedToken(access_token)

@@ -10,10 +10,23 @@ from django.contrib.auth.hashers import make_password, check_password
 from rest_framework import status
 from api.permissions import CustomJWTPermission
 from rest_framework.permissions import IsAuthenticated
-from .base import TokenResponseMixin
+from .base import BaseAPIView, TokenResponseMixin
 from api.serializers import WorkSpaceSerializer
 from rest_framework import viewsets
-
+from django.db.models import (
+    Prefetch,
+    OuterRef,
+    Func,
+    F,
+    Q,
+    Count,
+    Case,
+    Value,
+    CharField,
+    When,
+    Max,
+    IntegerField,
+)
 class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
     permission_classes = [ CustomJWTPermission]
     def create(self, request):
@@ -50,11 +63,12 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
                     role=20,
                     
                 )
+                
                 print('here')
                 token_response = self.handle_token_response(request)
                 return Response({
                     'data':serializer.data,
-                    'message': 'Workspace Created Succesfully'
+                    'message': 'Workspace Created Succesfully',
                     **token_response
                     })
             else:
@@ -62,3 +76,32 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
         except Exception as e:
             print(e,'000000000000000')
             None
+
+class WorkspaceEndPoint(BaseAPIView,TokenResponseMixin):
+    permission_classes = [ CustomJWTPermission]
+
+    def get(self, request):
+        member_count = (
+            WorkspaceMember.objects.filter(
+                workspace=OuterRef("id"), member__is_bot=False
+            )
+            .order_by()
+            .annotate(count=Func(F("id"), function="Count"))
+            .values("count")
+        )
+        workspace = (
+            (
+                Workspace.objects.prefetch_related(
+                    Prefetch("workspace_member", queryset=WorkspaceMember.objects.all())
+                )
+                .filter(
+                    workspace_member__member=request.user_id,
+                )
+                .select_related("owner")
+            )
+            .annotate(total_members=member_count)
+            
+        )
+
+        serializer = WorkSpaceSerializer(self.filter_queryset(workspace), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

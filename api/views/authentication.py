@@ -36,10 +36,9 @@ class SignUpEndpoint(APIView):
             user.token_updated_at = timezone.now()
             user.last_login = timezone.now()
             user.save()
-            print(user)
+            
             access_token, refresh_token = get_tokens_for_user(user)
-            print(access_token)
-            print(refresh_token)
+             
             return Response(
                 {
                     "access_token": access_token,
@@ -59,21 +58,18 @@ class SignInEndPoint(APIView):
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
-
         user = User.objects.filter(email=email).first()
         
-
         if user is None:
-            print('not found')
             return Response(
                 {
-                    'message': 'Sorry, we could not find a user with the provided credentials. Please try again.',
+                    'message': 'Sorry, user not found. Please try again.',
                     'status_code':  404
                 },
                  
             )
         if not check_password(password, user.password):
-            print('here****************')
+             
             return Response(
                 {
                     'message': 'Password Incorrect',

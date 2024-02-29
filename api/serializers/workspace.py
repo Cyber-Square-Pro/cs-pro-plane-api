@@ -19,6 +19,7 @@ class WorkSpaceSerializer(BaseSerializer):
             "updated_at",
             "owner",
         ]
+    
 
 class WorkspaceLiteSerializer(BaseSerializer):
     class Meta:
