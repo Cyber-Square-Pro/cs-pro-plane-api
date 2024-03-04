@@ -89,30 +89,27 @@ class EmailVerifyEndPoint(APIView, TokenResponseMixin):
     permission_classes = [CustomJWTPermission]
 
     def post(self, request):
+
         code = request.data['code']
         user_record = VerificationCode.objects.get(user=request.user_id)
         token_response = self.handle_token_response(request)
-        print('verifying.....')
+
         if user_record.code == code:
+            user = User.objects.get(id=request.user_id)
+            user.onboarding_step['email_verified'] = True
+            user.save()
+            onboarding_step = user_record.user.onboarding_step
+            print(onboarding_step)
+            user_record.created_at = timezone.now()
+            onboarding_step['email_verified'] = True
+            user_record.save()
 
-            if not user_record.is_expired():
-                user = User.objects.get(id=request.user_id)
-                user.onboarding_step['email_verified'] = True
-                user.save()
-
-                onboarding_step = user_record.user.onboarding_step
-                print(onboarding_step)
-                user_record.created_at = timezone.now()
-                onboarding_step['email_verified'] = True
-                user_record.save()
-                print('0000000000000000')
-                return Response({
-                    'message': 'Email verified succesfully',
-                    'status_code': 200,
-                    **token_response
-                })
-            else:
-                print('expired')
+            return Response({
+                'message': 'Email verified succesfully',
+                'status_code': 200,
+                **token_response
+            })
+            
 
         return Response({
             'message': 'Incorrect code',
@@ -136,6 +133,7 @@ class UserEndPoint(viewsets.ViewSet, TokenResponseMixin):
     def retrieve_user_settings(self, request):
         user = User.objects.get(id = request.user_id)
         serialized_data = UserMeSettingsSerializer(user).data
+        print('seee', serialized_data)
         return Response(serialized_data, status=status.HTTP_200_OK)
     
     def partial_update(self, request):

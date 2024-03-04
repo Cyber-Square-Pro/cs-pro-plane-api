@@ -27,8 +27,38 @@ from django.db.models import (
     Max,
     IntegerField,
 )
-class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
+class WorkspaceEndpoint(viewsets.ViewSet, BaseAPIView, TokenResponseMixin):
     permission_classes = [ CustomJWTPermission]
+
+    def fetch_workspace(self, request):
+        member_count = (
+            WorkspaceMember.objects.filter(
+                workspace=OuterRef("id"), member__is_bot=False
+            )
+            .order_by()
+            .annotate(count=Func(F("id"), function="Count"))
+            .values("count")
+        )
+        workspace = (
+            (
+                Workspace.objects.prefetch_related(
+                    Prefetch("workspace_member", queryset=WorkspaceMember.objects.all())
+                )
+                .filter(
+                    workspace_member__member=request.user_id,
+                )
+                .select_related("owner")
+            )
+            .annotate(total_members=member_count)
+            
+        )
+        token_response = self.handle_token_response(request)
+
+        serializer = WorkSpaceSerializer(self.filter_queryset(workspace), many=True)
+        print(serializer.data)
+        return Response({
+            'data':serializer.data, **token_response})
+    
     def create(self, request):
         try:
             
@@ -64,7 +94,12 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
                     
                 )
                 
-                print('here')
+                user = User.objects.get(id = request.user_id)
+                user.is_onboarded = True
+                # user.last_workspace_id = user_workspace.id
+                # user.onboarding_step['workspace_create'] = True
+                user.save()
+
                 token_response = self.handle_token_response(request)
                 return Response({
                     'data':serializer.data,
@@ -77,31 +112,26 @@ class WorkspaceEndpoint(viewsets.ViewSet, TokenResponseMixin):
             print(e,'000000000000000')
             None
 
-class WorkspaceEndPoint(BaseAPIView,TokenResponseMixin):
+ 
+
+    
+    
+class WorkSpaceAvailabilityCheckEndpoint(BaseAPIView,TokenResponseMixin):
     permission_classes = [ CustomJWTPermission]
 
     def get(self, request):
-        member_count = (
-            WorkspaceMember.objects.filter(
-                workspace=OuterRef("id"), member__is_bot=False
-            )
-            .order_by()
-            .annotate(count=Func(F("id"), function="Count"))
-            .values("count")
-        )
-        workspace = (
-            (
-                Workspace.objects.prefetch_related(
-                    Prefetch("workspace_member", queryset=WorkspaceMember.objects.all())
-                )
-                .filter(
-                    workspace_member__member=request.user_id,
-                )
-                .select_related("owner")
-            )
-            .annotate(total_members=member_count)
-            
-        )
+        slug = request.GET.get("slug", False)
 
-        serializer = WorkSpaceSerializer(self.filter_queryset(workspace), many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if not slug or slug == "":
+            return Response({
+                'message': 'Workspace Slug is required',
+                'status_code': 400
+                })
+        
+        workspace = Workspace.objects.filter(slug=slug).exists()
+        return Response({
+            'status':not workspace,
+            'status_code': 200
+             })
+
+        
