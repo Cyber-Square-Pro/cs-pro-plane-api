@@ -109,7 +109,6 @@ class WorkspaceEndpoint(viewsets.ViewSet, BaseAPIView, TokenResponseMixin):
             else:
                 print(serializer.errors)
         except Exception as e:
-            print(e,'000000000000000')
             None
 
  

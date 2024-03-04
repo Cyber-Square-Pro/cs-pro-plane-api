@@ -133,24 +133,18 @@ class UserEndPoint(viewsets.ViewSet, TokenResponseMixin):
     def retrieve_user_settings(self, request):
         user = User.objects.get(id = request.user_id)
         serialized_data = UserMeSettingsSerializer(user).data
-        print('seee', serialized_data)
         return Response(serialized_data, status=status.HTTP_200_OK)
     
     def partial_update(self, request):
         user = User.objects.get(id=request.user_id)
-        print(request.user_id, '9999999999999999')
-        print(request.data, '9***')
         serializer = UserMeSerializer(
             instance=user, data=request.data,  partial=True)
         if serializer.is_valid():
-            print('saving....')
             try:
                 serializer.save()
             except Exception as e:
                 print(e)
-        else:
-            print('errooo')
-            print(serializer.errors)
+
         return Response(serializer.data)
 
 
