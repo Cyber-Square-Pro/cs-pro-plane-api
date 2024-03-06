@@ -38,10 +38,9 @@ class EmailEndPoint(APIView, TokenResponseMixin):
     permission_classes = [CustomJWTPermission]
 
     def get(self, request):
-        requested_user = getattr(request, 'user_id', None)
 
+        requested_user = getattr(request, 'user_id', None)
         user_email = User.objects.get(id=requested_user)
-        print(user_email)
         serializer = UserEmailSerializer(user_email)
         token_response = self.handle_token_response(request)
         return Response({
@@ -54,7 +53,6 @@ class EmailEndPoint(APIView, TokenResponseMixin):
         try:
             user = User.objects.get(id=request.user_id)
             verification_code = generate_verification_code()
-            print(user)
             user_record = VerificationCode.objects.filter(
                 user=request.user_id).first()
             if not user_record:
@@ -79,6 +77,7 @@ class EmailEndPoint(APIView, TokenResponseMixin):
             return Response({
                 'message': 'Verification code sent',
                 'status_code': 200,
+                'code':verification_code,
                 **token_response
             })
         except Exception as e:
@@ -155,7 +154,6 @@ class UpdateUserProfileEndpoint(APIView, TokenResponseMixin):
         try:
 
             user = User.objects.get(pk=request.user_id)
-
             user.onboarding_step['profile_complete'] = True
             user.first_name = request.data['first_name']
             user.last_name = request.data['last_name']

@@ -22,7 +22,6 @@ class CustomJWTPermission(BasePermission):
             print('no token')
             raise PermissionDenied(self.un_authorized('No access token'))
         else:
-            print(' token')
             try:
                 user_id =  UntypedToken(access_token)['user_id']
                 request.user_id = user_id
